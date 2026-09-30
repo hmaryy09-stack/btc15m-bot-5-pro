@@ -633,7 +633,9 @@ def calculate_projection(
         projected,
         rate,
         required
-    ) 
+    )
+
+
 # =========================================================
 # GRÁFICO
 # =========================================================
@@ -988,6 +990,24 @@ body{
     color:var(--green);
 }
 
+/* =====================================================
+   COLOR DE LA DIRECCIÓN
+   SUBE = VERDE
+   BAJA = ROJO
+   ===================================================== */
+
+.direction-name.down-text,
+.direction-prob.down-text,
+.big-green.down-text{
+    color:var(--red);
+}
+
+.direction-name.up-text,
+.direction-prob.up-text,
+.big-green.up-text{
+    color:var(--green);
+}
+
 .lock{
     color:var(--yellow);
 
@@ -1266,6 +1286,7 @@ body{
     .btc-chart{
         height:260px;
     }
+
 }
 
 </style>
@@ -1275,7 +1296,6 @@ body{
 <body>
 
 <div class="page">
-
 
 <section class="header">
 
@@ -1299,7 +1319,6 @@ body{
 
     </div>
 
-
     <div class="live">
 
         🟢 EN VIVO
@@ -1315,17 +1334,15 @@ body{
 
 <section class="grid-top">
 
-
 <div class="card green-border">
 
     <div class="card-title">
         🔒 LECTURA ACTUAL — FIJA
     </div>
 
-
     <div class="direction">
 
-        <div class="direction-name">
+        <div class="direction-name {{ direction_class }}">
 
             {% if direction == "SUBE" %}
                 ▲ SUBE
@@ -1335,28 +1352,23 @@ body{
 
         </div>
 
-
-        <div class="direction-prob">
+        <div class="direction-prob {{ direction_class }}">
             {{ probability }}
         </div>
 
     </div>
 
-
     <div class="muted">
         probabilidad del modelo
     </div>
-
 
     <div class="lock">
         🔒 Dirección fija durante esta vela
     </div>
 
-
     <div class="price">
         {{ btc_price }}
     </div>
-
 
     <div class="delta">
         {{ btc_change }}
@@ -1366,7 +1378,6 @@ body{
 
 
 <div>
-
 
 <div class="card purple-border">
 
@@ -1404,7 +1415,6 @@ style="margin-top:14px;"
 
 </div>
 
-
 </div>
 
 </section>
@@ -1417,7 +1427,6 @@ style="margin-top:14px;"
         <div class="card-title">
             📈 GRÁFICO BTC
         </div>
-
 
         <div class="pills">
 
@@ -1441,12 +1450,9 @@ style="margin-top:14px;"
 
     </div>
 
-
     {{ chart|safe }}
 
 </section>
-
-
 <section class="card cyan-border">
 
     <div class="card-title">
@@ -1458,7 +1464,7 @@ style="margin-top:14px;"
 
         <div>
 
-            <div class="big-green">
+            <div class="big-green {{ direction_class }}">
 
                 {% if direction == "SUBE" %}
                     ▲ SUBE
@@ -1590,7 +1596,7 @@ style="margin-top:14px;"
     </div>
 
 
-    <div class="big-green">
+    <div class="big-green {{ direction_class }}">
 
         Probable cierre {{ direction }}
 
@@ -1712,7 +1718,7 @@ style="margin-top:14px;"
             Modelo
         </span>
 
-        <b>
+        <b class="{{ direction_class }}">
             {{ direction }}
             {{ probability }}
         </b>
@@ -1829,7 +1835,7 @@ style="margin-top:14px;"
             Dirección bloqueada
         </span>
 
-        <b class="up-text">
+        <b class="{{ direction_class }}">
             {{ direction }}
         </b>
 
@@ -1892,6 +1898,12 @@ def build_context():
     probability_value = signal[
         "probability"
     ]
+
+    # COLOR DE LA DIRECCIÓN
+    if direction == "SUBE":
+        direction_class = "up-text"
+    else:
+        direction_class = "down-text"
 
     if market:
 
@@ -2230,6 +2242,9 @@ def build_context():
 
         "direction":
             direction,
+
+        "direction_class":
+            direction_class,
 
         "probability":
             pct(
