@@ -532,22 +532,106 @@ def get_fixed_signal(market):
         ),
     )
 
+    candles = get_btc_candles()
+
+    target = get_target(
+        market
+    )
+
+    # =====================================================
+    # PRIMERA LECTURA:
+    # guardar solamente la DIRECCIÓN
+    # =====================================================
+
     if key not in FIXED_SIGNALS:
 
-        candles = get_btc_candles()
-
-        target = get_target(
-            market
+        first_model = calculate_model(
+            candles,
+            target
         )
 
-        FIXED_SIGNALS[key] = (
-            calculate_model(
-                candles,
-                target
-            )
+        FIXED_SIGNALS[key] = {
+            "direction":
+                first_model["direction"]
+        }
+
+    # =====================================================
+    # ACTUALIZAR EL MODELO EN TIEMPO REAL
+    # =====================================================
+
+    current_model = calculate_model(
+        candles,
+        target
+    )
+
+    fixed_direction = (
+        FIXED_SIGNALS[key]["direction"]
+    )
+
+    # =====================================================
+    # DIRECCIÓN FIJA
+    # =====================================================
+
+    current_direction = (
+        current_model["direction"]
+    )
+
+    # =====================================================
+    # PROBABILIDAD DINÁMICA
+    #
+    # Si el movimiento actual coincide con
+    # la dirección fija, usamos la probabilidad
+    # actual del modelo.
+    #
+    # Si se mueve en contra, la probabilidad baja.
+    # =====================================================
+
+    if current_direction == fixed_direction:
+
+        dynamic_probability = (
+            current_model["probability"]
         )
 
-    return FIXED_SIGNALS[key]
+    else:
+
+        dynamic_probability = (
+            1.0
+            - current_model["probability"]
+        )
+
+    # Limitar entre 8% y 92%
+    dynamic_probability = max(
+        0.08,
+        min(
+            0.92,
+            dynamic_probability
+        )
+    )
+
+    # =====================================================
+    # DEVOLVER MODELO ACTUALIZADO
+    # PERO CON DIRECCIÓN FIJA
+    # =====================================================
+
+    return {
+        "direction":
+            fixed_direction,
+
+        "probability":
+            dynamic_probability,
+
+        "confirmation":
+            current_model["confirmation"],
+
+        "trend":
+            current_model["trend"],
+
+        "momentum":
+            current_model["momentum"],
+
+        "volatility":
+            current_model["volatility"],
+    }
 
 
 # =========================================================
